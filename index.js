@@ -16,13 +16,44 @@ app.use(express.json());
 app.use(cookieParser());
 app.use('/uploads', express.static('uploads'));
 
-// Crear pool de conexiones para mejor manejo y reconexión automática
-const db = mysql.createConnection({
+const mysql = require('mysql');
+
+let db;
+
+function handleDisconnect() {
+  db = mysql.createConnection({
     host: process.env.HOST,
     user: process.env.USER,
-    password : process.env.PASSWORD,
-    database: process.env.DATABASE
-});
+    password: process.env.PASSWORD,
+    database: process.env.DATABASE,
+    port: process.env.DB_PORT
+  });
+
+  db.connect(err => {
+    if (err) {
+      console.error('Error connecting to DB:', err);
+      setTimeout(handleDisconnect, 2000); // Reintentar conexión tras 2 segundos
+    } else {
+      console.log('Conectado a la base de datos');
+    }
+  });
+
+  db.on('error', err => {
+    console.error('DB error', err);
+    if (err.code === 'PROTOCOL_CONNECTION_LOST' || err.fatal) {
+      console.log('Reconectando a la base de datos...');
+      handleDisconnect();
+    } else {
+      throw err;
+    }
+  });
+}
+
+handleDisconnect();
+
+module.exports = db;
+
+
 
 /* =================== MULTER PARA SUBIR IMÁGENES ========================= */
 const upload = multer({ dest: 'uploads/' });
@@ -287,7 +318,7 @@ app.get('/comprobate',(req,res)=>{
     console.log('entra exitoso nasa')
 })
 
-const PORT = process.env.DB_PORT;
+const PORT = process.env.DB_PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en el puerto ${PORT}`);
 });
