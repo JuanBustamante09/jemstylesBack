@@ -17,40 +17,15 @@ app.use(cookieParser());
 app.use('/uploads', express.static('uploads'));
 
 
-let db;
-
-function handleDisconnect() {
-  db = mysql.createConnection({
-    host: process.env.HOST,
-    user: process.env.USER,
-    password: process.env.PASSWORD,
-    database: process.env.DATABASE,
-    port: process.env.DB_PORT
-  });
-
-  db.connect(err => {
-    if (err) {
-      console.error('Error connecting to DB:', err);
-      setTimeout(handleDisconnect, 2000); // Reintentar conexión tras 2 segundos
-    } else {
-      console.log('Conectado a la base de datos');
-    }
-  });
-
-  db.on('error', err => {
-    console.error('DB error', err);
-    if (err.code === 'PROTOCOL_CONNECTION_LOST' || err.fatal) {
-      console.log('Reconectando a la base de datos...');
-      handleDisconnect();
-    } else {
-      throw err;
-    }
-  });
-}
-
-handleDisconnect();
-
-module.exports = db;
+const pool = mysql.createPool({
+  host: process.env.HOST,
+  user: process.env.USER,
+  password: process.env.PASSWORD,
+  database: process.env.DATABASE,
+  waitForConnections: true,
+  connectionLimit: 10,  // Ajusta según tu necesidad y límite del servidor
+  queueLimit: 0
+});
 
 
 
@@ -79,7 +54,7 @@ app.post('/images/single', upload.single('photos'), (req, res) => {
     const create_product = new Date();
     const cod_tblcategories = 1;
 
-    db.query(
+    pool.query(
       'INSERT INTO products(title, price, stock, reference_product, new_offert, create_product, cod_tblstate_product, cod_tblcategories) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
       [title, price, stock, reference, new_offert, create_product, state, cod_tblcategories],
       (err, result) => {
@@ -124,7 +99,7 @@ app.get('/login', (req, res) => {
   const typeUser = 3;
   const dateCreateUser = new Date();
 
-  db.query(
+  pool.query(
     'INSERT INTO users(name, token_session, type_profile, date_create) VALUES (?, ?, ?, ?)',
     [userTemp, token, typeUser, dateCreateUser],
     (err, result) => {
@@ -143,7 +118,7 @@ app.get("/readProducts", (req, res) => {
   const categoriesParam = req.query.categories;
   const categories = categoriesParam ? categoriesParam.split(',').map(Number) : [];
 
-  db.query(
+  pool.query(
     `SELECT p.*, t.description, IFNULL(MAX(CASE WHEN u.token_session = ? THEN l.liked ELSE 0 END),0) AS liked
      FROM products p
      LEFT JOIN liked l ON l.cod_tblproducts = p.cod_product
@@ -167,7 +142,7 @@ app.get("/readProducts", (req, res) => {
 app.post("/insertStateLiked", (req, res) => {
   const { cod_product, liked, user_token } = req.body;
 
-  db.query(
+  pool.query(
     `INSERT INTO liked (liked, cod_tblusers, cod_tblproducts)
      SELECT ?, u.id_user, ? FROM users AS u WHERE u.token_session = ?`,
     [liked, cod_product, user_token],
@@ -184,7 +159,7 @@ app.post("/insertStateLiked", (req, res) => {
 app.put("/updateStateLiked", (req, res) => {
   const { liked, cod_product, user_token } = req.body;
 
-  db.query(
+  pool.query(
     `UPDATE liked l
      INNER JOIN users s ON l.cod_tblusers = s.id_user
      SET l.liked = ?
@@ -203,7 +178,7 @@ app.put("/updateStateLiked", (req, res) => {
 app.get("/readProductsWishtList", (req, res) => {
   const token_session = req.query.token_session;
 
-  db.query(
+  pool.query(
     `SELECT p.*, t.description, l.liked
      FROM products p
      LEFT JOIN liked l ON l.cod_tblproducts = p.cod_product
@@ -225,7 +200,7 @@ app.post('/insertProductsCart', (req, res) => {
   const quantity_garment = 1;
   const { size_selected, cod_tblproducts, cod_tblusers } = req.body;
 
-  db.query(
+  pool.query(
     `INSERT INTO details_cart (quantity_garment, size_garment, cod_tblproducts, cod_tblusers)
      SELECT ?, ?, ?, u.id_user FROM users u WHERE u.token_session = ?
      ON DUPLICATE KEY UPDATE quantity_garment = quantity_garment + 1`,
@@ -243,7 +218,7 @@ app.post('/insertProductsCart', (req, res) => {
 app.get('/getPedidosCart', (req, res) => {
   const user_token = req.query.user_token;
 
-  db.query(
+  pool.query(
     `SELECT p.*, d.*, s.*
      FROM products p
      INNER JOIN details_cart d ON p.cod_product = d.cod_tblproducts
@@ -265,7 +240,7 @@ app.get('/getPedidosCart', (req, res) => {
 app.get('/readCountProductsCart', (req, res) => {
   const user_token = req.query.token_session;
 
-  db.query(
+  pool.query(
     `SELECT SUM(d.quantity_garment) AS cantidad
      FROM details_cart d
      INNER JOIN users u ON d.cod_tblusers = u.id_user
@@ -284,7 +259,7 @@ app.get('/readCountProductsCart', (req, res) => {
 app.get('/loginNewUser', (req, res) => {
   const { user, password } = req.query;
 
-  db.query(
+  pool.query(
     'SELECT * FROM users WHERE email = ? AND password = ?',
     [user, password],
     (err, result) => {
@@ -300,7 +275,7 @@ app.get('/loginNewUser', (req, res) => {
 app.delete('/removeProductsBag/:cod_details_cart', (req, res) => {
   const cod_details_cart = req.params.cod_details_cart;
 
-  db.query(
+  pool.query(
     'DELETE FROM details_cart WHERE cod_details_cart = ?',
     [cod_details_cart],
     (err, result) => {
@@ -317,7 +292,7 @@ app.get('/comprobate',(req,res)=>{
     console.log('entra exitoso nasa')
 })
 
-const PORT = process.env.DB_PORT || 3001;
+const PORT = process.env.pool_PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en el puerto ${PORT}`);
 });
