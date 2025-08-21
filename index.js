@@ -23,6 +23,11 @@ const db = mysql.createConnection({
     password : process.env.PASSWORD,
     database: process.env.DATABASE
 });
+
+/* =================== HOMMIE ========================= */
+app.get('/', (req, res) => {
+  res.send('Welcome to landing page.');
+});
 /* ============================================ */
 const upload = multer({ dest: 'uploads/'})
 
@@ -253,6 +258,6 @@ app.delete('/removeProductsBag/:cod_details_cart',(req,res)=>{
         }
     )
 })
-app.listen(3001,()=>{
-    console.log("corriendo en el puerto 3001")
+app.listen(58624,()=>{
+    console.log("corriendo en el puerto 58624")
 })
