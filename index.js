@@ -28,7 +28,9 @@ const pool = mysql.createPool({
 });
 
 
-
+app.get('/',(req,res)=>{
+    res.send('bienvenidos')
+})
 /* =================== MULTER PARA SUBIR IMÁGENES ========================= */
 const upload = multer({ dest: 'uploads/' });
 
