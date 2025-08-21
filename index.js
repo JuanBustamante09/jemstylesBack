@@ -25,9 +25,7 @@ const db = mysql.createConnection({
 });
 
 /* =================== HOMMIE ========================= */
-app.get('/', (req, res) => {
-  res.send('Welcome to landing page.');
-});
+
 /* ============================================ */
 const upload = multer({ dest: 'uploads/'})
 
