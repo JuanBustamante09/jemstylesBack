@@ -292,7 +292,7 @@ app.get('/comprobate',(req,res)=>{
     console.log('entra exitoso nasa')
 })
 
-const PORT = process.env.pool_PORT || 3001;
+const PORT = process.env.DB_PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en el puerto ${PORT}`);
 });
