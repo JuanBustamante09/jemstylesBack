@@ -21,6 +21,7 @@ const pool = mysql.createPool({
   host: process.env.HOST,
   user: process.env.USER,
   password: process.env.PASSWORD,
+  port: process.env.DB_PORT,
   database: process.env.DATABASE,
   waitForConnections: true,
   connectionLimit: 10,  // Ajusta según tu necesidad y límite del servidor
@@ -294,7 +295,7 @@ app.get('/comprobate',(req,res)=>{
     console.log('entra exitoso nasa')
 })
 
-const PORT = process.env.DB_PORT || 3001;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en el puerto ${PORT}`);
 });
