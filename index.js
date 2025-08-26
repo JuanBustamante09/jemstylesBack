@@ -56,7 +56,7 @@ app.post('/images/single', upload.single('photos'), async (req, res) => {
 /* =================== LOGIN CON JWT ========================= */
 app.get('/login', async (req, res) => {
   const existingToken = req.cookies.token_session;
-  const secretKey = 'token.env.dev'; // Idealmente poner en .env
+  const secretKey = process.env.SECRET_KEY || 'token.env.dev'; // Mejor usar variable de entorno
 
   if (existingToken) {
     try {
@@ -74,10 +74,11 @@ app.get('/login', async (req, res) => {
   expirationDate.setDate(expirationDate.getDate() + 7);
 
   res.cookie('token_session', token, {
-    httpOnly: false,
-    secure: false, // Cambiar a true si usas HTTPS
+    httpOnly: false,       // Si quieres acceder desde JS, sino true para mayor seguridad
+    secure: false,         // Cambiar a true si usas HTTPS
     expires: expirationDate,
-    sameSite: 'strict'
+    sameSite: 'lax',       // 'lax' es más permisivo que 'strict' y evita problemas en navegación SPA
+    path: '/',             // Muy importante para que la cookie esté disponible en todo el dominio
   });
 
   const userTemp = 'user_temporal';
@@ -95,6 +96,7 @@ app.get('/login', async (req, res) => {
     res.status(500).send('Error al crear usuario');
   }
 });
+
 
 /* =================== RUTAS VARIAS ========================= */
 app.get("/readProducts", async (req, res) => {
