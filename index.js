@@ -9,7 +9,7 @@ import { PORT } from "./config.js";
 /* require('dotenv').config(); */
 const app = express();
 app.use(cors({
-  origin: 'https://jemstyles.netlify.app',
+  origin: 'https://jemstyles.up.railway.app',
   credentials: true
 }));
 app.use(express.json());
@@ -74,10 +74,10 @@ app.get('/login', async (req, res) => {
   expirationDate.setDate(expirationDate.getDate() + 7);
 
   res.cookie('token_session', token, {
-    httpOnly: false,          // Cambia a true si no necesitas acceso desde JS
-    secure: true,             // HTTPS obligatorio para sameSite none
-    expires: expirationDate,  // Expira en 7 días
-    sameSite: 'none',         // Permite cookies cross-site entre Netlify y Railway
+    httpOnly: false,
+    secure: false, // Cambiar a true si usas HTTPS
+    expires: expirationDate,
+    sameSite: 'strict',
     path: '/',                // Cookie disponible en todo el dominio
     // domain: 'tu-dominio-backend.com', // Opcional, si quieres especificar dominio
   });
