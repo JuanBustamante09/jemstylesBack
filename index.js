@@ -9,7 +9,7 @@ import { PORT } from "./config.js";
 /* require('dotenv').config(); */
 const app = express();
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: 'https://jemstyles.netlify.app',
   credentials: true
 }));
 app.use(express.json());
