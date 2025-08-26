@@ -73,14 +73,13 @@ app.get('/login', async (req, res) => {
   const expirationDate = new Date();
   expirationDate.setDate(expirationDate.getDate() + 7);
 
-  const isProduction = process.env.NODE_ENV === 'production';
-
   res.cookie('token_session', token, {
-    httpOnly: false,          // Permite acceso desde JS (si quieres más seguridad, pon true y usa otro mecanismo para acceder)
-    secure: true,     // Solo HTTPS en producción
+    httpOnly: false,          // Cambia a true si no necesitas acceso desde JS
+    secure: true,             // HTTPS obligatorio para sameSite none
     expires: expirationDate,  // Expira en 7 días
-    sameSite: 'lax',          // Evita bloqueos en SPA y navegación normal
+    sameSite: 'none',         // Permite cookies cross-site entre Netlify y Railway
     path: '/',                // Cookie disponible en todo el dominio
+    // domain: 'tu-dominio-backend.com', // Opcional, si quieres especificar dominio
   });
 
   const userTemp = 'user_temporal';
@@ -98,6 +97,7 @@ app.get('/login', async (req, res) => {
     res.status(500).send('Error al crear usuario');
   }
 });
+
 
 /* =================== RUTAS VARIAS ========================= */
 app.get("/readProducts", async (req, res) => {
