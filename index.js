@@ -77,9 +77,7 @@ app.get('/login', async (req, res) => {
     httpOnly: false,
     secure: false, // Cambiar a true si usas HTTPS
     expires: expirationDate,
-    sameSite: 'strict',
-    path: '/',                // Cookie disponible en todo el dominio
-    // domain: 'tu-dominio-backend.com', // Opcional, si quieres especificar dominio
+    sameSite: 'strict'
   });
 
   const userTemp = 'user_temporal';
