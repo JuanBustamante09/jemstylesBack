@@ -77,8 +77,8 @@ app.get('/login', async (req, res) => {
   const isProduction = process.env.NODE_ENV === 'production';
 
   res.cookie('token_session', token, {
-    httpOnly: true,          // Mejor seguridad, no accesible desde JS
-    secure: isProduction,    // Solo en producción con HTTPS
+    httpOnly: fakse,          // Mejor seguridad, no accesible desde JS
+    secure: true,    // Solo en producción con HTTPS
     expires: expirationDate,
     sameSite: 'lax',         // Evita problemas con SPA y navegación normal
     path: '/',               // Cookie disponible en todo el dominio
