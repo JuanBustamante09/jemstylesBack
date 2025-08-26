@@ -73,15 +73,14 @@ app.get('/login', async (req, res) => {
   const expirationDate = new Date();
   expirationDate.setDate(expirationDate.getDate() + 7);
 
-  // Detecta si estás en producción para usar secure:true
   const isProduction = process.env.NODE_ENV === 'production';
 
   res.cookie('token_session', token, {
-    httpOnly: false,          // Mejor seguridad, no accesible desde JS
-    secure: true,    // Solo en producción con HTTPS
-    expires: expirationDate,
-    sameSite: 'lax',         // Evita problemas con SPA y navegación normal
-    path: '/',               // Cookie disponible en todo el dominio
+    httpOnly: false,          // Permite acceso desde JS (si quieres más seguridad, pon true y usa otro mecanismo para acceder)
+    secure: true,     // Solo HTTPS en producción
+    expires: expirationDate,  // Expira en 7 días
+    sameSite: 'lax',          // Evita bloqueos en SPA y navegación normal
+    path: '/',                // Cookie disponible en todo el dominio
   });
 
   const userTemp = 'user_temporal';
