@@ -56,7 +56,7 @@ app.post('/images/single', upload.single('photos'), async (req, res) => {
 /* =================== LOGIN CON JWT ========================= */
 app.get('/login', async (req, res) => {
   const existingToken = req.cookies.token_session;
-  const secretKey = process.env.SECRET_KEY || 'token.env.dev'; // Usa variable de entorno
+  const secretKey = process.env.SECRET_KEY || 'token.env.dev';
 
   if (existingToken) {
     try {
@@ -75,10 +75,10 @@ app.get('/login', async (req, res) => {
 
   res.cookie('token_session', token, {
     httpOnly: false,       // Permite acceso desde JS en el navegador
-  secure: false,         // Cambiar a true si usas HTTPS en producción
-  expires: expirationDate,
-  sameSite: 'lax',    // Puedes usar 'lax' si tienes problemas con el envío en navegación normal
-  path: '/',             // Asegura que la cookie esté disponible en toda la app
+    secure: true,          // Cambiar a true si usas HTTPS (recomendado en producción)
+    expires: expirationDate,
+    sameSite: 'lax',       // 'lax' suele funcionar bien para mismo dominio o subdominios
+    path: '/',
   });
 
   const userTemp = 'user_temporal';
@@ -96,6 +96,7 @@ app.get('/login', async (req, res) => {
     res.status(500).send('Error al crear usuario');
   }
 });
+
 
 
 /* =================== RUTAS VARIAS ========================= */
