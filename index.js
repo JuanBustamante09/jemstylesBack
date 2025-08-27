@@ -74,10 +74,11 @@ app.get('/login', async (req, res) => {
   expirationDate.setDate(expirationDate.getDate() + 7);
 
   res.cookie('token_session', token, {
-    httpOnly: false,
-    secure: false, // Cambiar a true si usas HTTPS
-    expires: expirationDate,
-    sameSite: 'strict'
+    httpOnly: false,       // Permite acceso desde JS en el navegador
+  secure: false,         // Cambiar a true si usas HTTPS en producción
+  expires: expirationDate,
+  sameSite: 'strict',    // Puedes usar 'lax' si tienes problemas con el envío en navegación normal
+  path: '/',             // Asegura que la cookie esté disponible en toda la app
   });
 
   const userTemp = 'user_temporal';
